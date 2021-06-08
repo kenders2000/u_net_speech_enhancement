@@ -15,7 +15,8 @@ from functools import partial
 config_filename = None
 if "CLARITY_ROOT" in os.environ:
     config_filename = f"{os.environ['CLARITY_ROOT']}/clarity.cfg"
-PATH_TO_CLARITY_FOLDER = "/home/kenders/clarity_CEC1/"
+# PATH_TO_CLARITY_FOLDER = "/home/kenders/clarity_CEC1/"
+PATH_TO_CLARITY_FOLDER = os.environ['CLARITY_ROOT']
 import pathlib
 import argparse
 import json
@@ -208,7 +209,8 @@ class ClarityAudioDataloaderSequenceSpectrograms(tf.keras.utils.Sequence):
                 self.target_wavfiles.append(target_wav_file)
                 self.audiograms.append(audiogram)
         idx = list(range(len(self.target_wavfiles)))
-        if shuffling:
+        self.shuffling = shuffling
+        if self.shuffling:
             random.shuffle(idx)
         self.batch_idx = chunk_list(idx, batch_size)
         self.mixed_wavfiles = [self.mixed_wavfiles[i] for i in idx]
