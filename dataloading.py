@@ -219,7 +219,7 @@ class ClarityAudioDataloaderSequenceSpectrograms(tf.keras.utils.Sequence):
         self.batch_idx = chunk_list(idx, batch_size)
         self.mixed_wavfiles = [self.mixed_wavfiles[i] for i in idx]
         self.target_wavfiles = [self.target_wavfiles[i] for i in idx]
-        self.audiograms = [self.audiograms[i] for i in idx]
+        # self.audiograms = [self.audiograms[i] for i in idx]
 
     def __len__(self):
         return len(self.batch_idx)
