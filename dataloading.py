@@ -205,12 +205,13 @@ class ClarityAudioDataloaderSequenceSpectrograms(tf.keras.utils.Sequence):
             CH3 = f"{scene['scene']}_mixed_CH3.wav"
             self.mixed_wavfiles.append([CH0,CH1,CH2,CH3])
             self.target_wavfiles.append(target_wav_file)
-            self.audiograms.append(audiogram)
             self.scenes.append(scene)
+
             # for listener_name in self.scenes_listeners[scene["scene"]]:
             #     listener = self.listeners[listener_name]
             #     self.listener_ids.append(listener_name)
             #     audiogram = [listener["audiogram_levels_l"] , listener["audiogram_levels_l"]]
+            #     self.audiograms.append(audiogram)
         idx = list(range(len(self.target_wavfiles)))
         self.shuffling = shuffling
         if self.shuffling:
