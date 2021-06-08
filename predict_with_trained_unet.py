@@ -223,7 +223,7 @@ def main():
         dest="path_to_model_starting_point",
         help="Path a starting point for the model.",
         # default="/home/kenders/greenhdd/clarity_challenge/pk_speech_enhancement/models/9_0.01611/",
-        default="/home/paulkendrick/spectrum_models/models/9_0.01611/",
+        default="/home/ubuntu/spectrogram_based_model/models/9_0.01611/",
     )
     args = ap.parse_args()
     eps = 1e-9
@@ -304,7 +304,7 @@ def main():
         # for the dev and train set, using ClarityAudioDataloaderSequenceSpectrograms
         assert data_loader.shuffling == False, "Shuffling must be disabled"
         x_spec, y_spec = data_loader[batch_n]
-        scene, listener_id = data_loader.scenes[batch_n], data_loader.listener_ids[batch_n]
+        scene, listener_id = data_loader.scene_list[batch_n], data_loader.scenes_listeners[batch_n]
         reconstructed_audio_full_L = reconstruct_cleaned_audio(x_spec, spec_frame_size, spec_frame_step, lookahead_frame_size, lookahead_frame_step, reconstruction_overlap, verbose=verbose, n_proc=n_proc)
         # mirror the head, i.e. swap the ears over and now the right ear channel 1 is rhe reference.
         x_spec_flip = x_spec[..., [1,0,3,2,5,4]]
