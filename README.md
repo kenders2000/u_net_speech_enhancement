@@ -12,7 +12,7 @@
   ```bash:
   docker build --build-arg USR=username --build-arg UID=$(id -u)  --build-arg GID=$(id -g) -f clarity.dockerfile -t username:tf-clarity .
   ```
-4) run the container, attach your datastorage.
+4) run the container, attach the spectrum_based_model folder.
   ```bash:
   docker run --volume=/home/username/spectrum_based_model:/home/username/spectrum_based_model -p 8888:8888 -it kenders:tf-clarity zsh
   ```
