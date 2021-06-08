@@ -134,23 +134,6 @@ def reconstruct_cleaned_audio_mp(
     Returns:
         audio (np.array): the reconstructed audio (left ear, relative to channel 0 which is channel 1 in the clarity doc))
     """
-    def _reconstruct(
-        spec_frame_size,
-        spec_frame_step,
-        lookahead_frame_size,
-        lookahead_frame_step,
-        reconstruction_overlap,
-        x_cleaned_complex,
-    ):
-        # istft using librosa
-        x_cleaned_complex = np.transpose(x_cleaned_complex, [1, 0])
-        reconstructed = librosa.istft(
-            x_cleaned_complex,
-            hop_length=spec_frame_step,
-            win_length=spec_frame_size,
-            length=lookahead_frame_size
-        )
-        return reconstructed[(lookahead_frame_size-lookahead_frame_step-reconstruction_overlap):lookahead_frame_size]
     out = []
     display_progress_bar = False if verbose == 1 else True
     x_spec_chunked = chunk_list(x_spec, n_proc)
@@ -171,6 +154,23 @@ def reconstruct_cleaned_audio_mp(
 
     return out
 
+def _reconstruct(
+    spec_frame_size,
+    spec_frame_step,
+    lookahead_frame_size,
+    lookahead_frame_step,
+    reconstruction_overlap,
+    x_cleaned_complex,
+):
+    # istft using librosa
+    x_cleaned_complex = np.transpose(x_cleaned_complex, [1, 0])
+    reconstructed = librosa.istft(
+        x_cleaned_complex,
+        hop_length=spec_frame_step,
+        win_length=spec_frame_size,
+        length=lookahead_frame_size
+    )
+    return reconstructed[(lookahead_frame_size-lookahead_frame_step-reconstruction_overlap):lookahead_frame_size]
 
 
 
@@ -304,15 +304,20 @@ def main():
         # for the dev and train set, using ClarityAudioDataloaderSequenceSpectrograms
         assert data_loader.shuffling == False, "Shuffling must be disabled"
         x_spec, y_spec = data_loader[batch_n]
-        scene, listener_id = data_loader.scene_list[batch_n], data_loader.scenes_listeners[batch_n]
+        scene, listener_id = data_loader.scenes[batch_n], data_loader.listener_ids[batch_n]
         reconstructed_audio_full_L = reconstruct_cleaned_audio(x_spec, spec_frame_size, spec_frame_step, lookahead_frame_size, lookahead_frame_step, reconstruction_overlap, verbose=verbose, n_proc=n_proc)
         # mirror the head, i.e. swap the ears over and now the right ear channel 1 is rhe reference.
         x_spec_flip = x_spec[..., [1,0,3,2,5,4]]
         reconstructed_audio_full_R = reconstruct_cleaned_audio(x_spec_flip, spec_frame_size, spec_frame_step, lookahead_frame_size, lookahead_frame_step, reconstruction_overlap, verbose=verbose, n_proc=n_proc)
         reconstructed_audio_full = np.stack([reconstructed_audio_full_L, reconstructed_audio_full_R], axis=1)
-        # output_filename = f"reconstructed_audio/{dataset}/{scene}_{listener_id}_HA-output.wav"
-        output_filename = f"{output_path}/{dataset}/{scene}_{listener_id}_cleaned_signal.wav"
+
+
+        output_filename = f"{output_path}/{dataset}/{scene['scene']}_cleaned_signal_16k.wav"
         sf.write(output_filename, reconstructed_audio_full, fs)
+
+        reconstructed_audio_full_44k = librosa.resample(reconstructed_audio_full, fs, 44100)
+        output_filename_44k = f"{output_path}/{dataset}/{scene['scene']}_cleaned_signal_16k.wav"
+        sf.write(output_filename_44k, reconstructed_audio_full_44k, 44100)
         progbar.add(1)
 
 
