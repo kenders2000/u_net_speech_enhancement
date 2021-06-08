@@ -3,10 +3,9 @@
 # Script for unpacking clarity data downloads into the clarity root
 #
 # e.g. unpack.sh clarity_CEC1_data.main.v1_0.tgz <TARGET_DIR>
-USR=paulkendrick
+USR=$1
+TARGET_DIR=$2
 
-# TARGET_DIR=/home/kenders/greenhdd/clarity_challenge/data
-TARGET_DIR=/home/$USR/data
 CLARITY_ROOT=/home/$USR/clarity_CEC1  #$(dirname $(dirname $full_path) ) # up one level from install script
 
 # Get the top-level directory from the Clarity data
