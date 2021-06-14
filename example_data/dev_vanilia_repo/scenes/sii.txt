@@ -1,0 +1,3 @@
+Scene S06001 listener L0064 sii 0.1121
+Scene S06001 listener L0068 sii 0.0895
+Scene S06001 listener L0008 sii 0.0334

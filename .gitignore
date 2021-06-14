@@ -1,0 +1,7 @@
+*.pyc
+.ipynb_checkpoints
+*.pem
+.DS_store
+..DS_store
+*.pkf
+~$performance.xlsx

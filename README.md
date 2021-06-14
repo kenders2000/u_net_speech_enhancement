@@ -14,10 +14,11 @@
   ```
 4) run the container, attach the spectrum_based_model folder.
   ```bash:
-  docker run --volume=/home/username/spectrum_based_model:/home/username/spectrum_based_model -p 8888:8888 -it kenders:tf-clarity zsh
+  docker run --volume=/home/ubuntu/spectrogram_based_model:/home/ubuntu/spectrogram_based_model -p 8888:8888 -it kenders:tf-clarity zsh
   ```
 5) additional environment steps:
 ```bash:
 source ${CLARITY_ROOT}/env/bin/activate
-(cd /home/username/spectrum_based_model/env && ./make_links.sh)
+(cd /home/paulkendrick/spectrogram_based_models/env && ./make_links.sh paulkendrick /home/paulkendrick/spectrogram_based_models/example_data)
+source /home/paulkendrick/clarity_CEC1/tools/openMHA/bin/thismha.sh
 ```

@@ -96,6 +96,8 @@ def reconstruct_cleaned_audio(
 
         # istft using librosa
         x_cleaned_complex = np.transpose(x_cleaned_complex, [1, 0])
+        # Luckily because the  audio length (96000) is an integer multiple of the hop size(256)
+        # no padding of the signal is required, this is just pure luck!!
         reconstructed = librosa.istft(x_cleaned_complex, hop_length=spec_frame_step, win_length=spec_frame_size, length=lookahead_frame_size)
         # grab the last `lookahead_frame_step
         out.append(reconstructed[(lookahead_frame_size-lookahead_frame_step-reconstruction_overlap):lookahead_frame_size])
@@ -222,10 +224,18 @@ def main():
         type=str,
         dest="path_to_model_starting_point",
         help="Path a starting point for the model.",
-        # default="/home/kenders/greenhdd/clarity_challenge/pk_speech_enhancement/models/9_0.01611/",
-        default="/home/ubuntu/spectrogram_based_model/models/9_0.01611/",
+        default="/home/kenders/greenhdd/clarity_challenge/pk_speech_enhancement/models/9_0.01611/",
+        # default="/home/ubuntu/spectrogram_based_model/models/9_0.01611/",
+    )
+    ap.add_argument(
+        "-d",
+        type=str,
+        dest="dataset",
+        help="Dataset train eval or dev.",
+        default="dev",
     )
     args = ap.parse_args()
+    dataset = args.dataset
     eps = 1e-9
     fs = 16000
     output_path = pathlib.Path(os.environ['CLARITY_ROOT']) / "data" / "clarity_data"
@@ -240,51 +250,53 @@ def main():
     batch_size = 1
     print("Loading model")
     model = tf.keras.models.load_model(args.path_to_model_starting_point)
+    # model = tf.keras.models.load_model("/home/ubuntu/spectrogram_based_model/models/9_0.01611/")
+
     model.summary()
     n_proc = 7
     verbose = 0
 
     # for the train and dev sets usinf ClarityAudioDataloaderSequenceSpectrograms
-    dataset = "dev"
-    data_loader = ClarityAudioDataloaderSequenceSpectrograms(
-        dataset=dataset,
-        spec_frame_step=spec_frame_step,
-        spec_frame_size=spec_frame_size,
-        frame_step=lookahead_frame_step,
-        frame_size=lookahead_frame_size,
-        new_sample_rate=fs,
-        batch_size=batch_size,
-        target_length=6.0*fs,
-        verbose=0,
-        return_type="complex",
-        n_proc=1,
-        shuffling=False
-    )
-
-    # test the dataloader
-    # x_spec, y_spec = data_loader[0]
-    # frames = x_spec.shape[1]
-    # bins = x_spec.shape[2]
-    # channels = x_spec.shape[3]
-
-    # just when using the eval set (as there are no targets) usding
-    # ClarityAudioDataloaderSequenceSpectrogramsRval
-    # dataset = "eval"
-    # data_loader = ClarityAudioDataloaderSequenceSpectrogramsEval(
-    #     dataset=dataset,
-    #     spec_frame_step=spec_frame_step,
-    #     spec_frame_size=spec_frame_size,
-    #     frame_step=lookahead_frame_step,
-    #     frame_size=lookahead_frame_size,
-    #     new_sample_rate=fs,
-    #     batch_size=batch_size,
-    #     target_length=6.0*fs,
-    #     verbose=0,
-    #     return_type="complex",
-    #     n_proc=1,
-    #     shuffling=False
-    # )
-
+    if dataset == "dev" or dataset =="train":
+        data_loader = ClarityAudioDataloaderSequenceSpectrograms(
+            dataset=dataset,
+            spec_frame_step=spec_frame_step,
+            spec_frame_size=spec_frame_size,
+            frame_step=lookahead_frame_step,
+            frame_size=lookahead_frame_size,
+            new_sample_rate=fs,
+            batch_size=batch_size,
+            target_length=6.0*fs,
+            verbose=0,
+            return_type="complex",
+            n_proc=1,
+            shuffling=False
+        )
+        # test the dataloader
+        # x_spec, y_spec = data_loader[0]
+        # frames = x_spec.shape[1]
+        # bins = x_spec.shape[2]
+        # channels = x_spec.shape[3]
+    elif dataset == "eval":
+        # just when using the eval set (as there are no targets) usding
+        # ClarityAudioDataloaderSequenceSpectrogramsRval
+        # dataset = "eval"
+        data_loader = ClarityAudioDataloaderSequenceSpectrogramsEval(
+            dataset=dataset,
+            spec_frame_step=spec_frame_step,
+            spec_frame_size=spec_frame_size,
+            frame_step=lookahead_frame_step,
+            frame_size=lookahead_frame_size,
+            new_sample_rate=fs,
+            batch_size=batch_size,
+            target_length=6.0*fs,
+            verbose=0,
+            return_type="complex",
+            n_proc=1,
+            shuffling=False
+        )
+    else:
+        raise RuntimeError("Unsupported dataset")
 
     # using the OrderedEnqueuer to iterate the keras sequence enables pre fetching
     # however this requires a huge ammount of memory as two instances are required in memory
@@ -296,15 +308,15 @@ def main():
     progbar = tf.keras.utils.Progbar(len(data_loader))
     for batch_n in range(len(data_loader)):
         # when using prefetching (uses too much memory)
-        # x_spec, scene, listener_id = next(gen)
+        # x_spec, scene = next(gen)
 
         # for the eval set only, using ClarityAudioDataloaderSequenceSpectrogramsEval
-        # x_spec, scene, listener_id = data_loader[batch_n]
+        # x_spec, scene = data_loader[batch_n]
 
         # for the dev and train set, using ClarityAudioDataloaderSequenceSpectrograms
         assert data_loader.shuffling == False, "Shuffling must be disabled"
         x_spec, y_spec = data_loader[batch_n]
-        scene, listener_id = data_loader.scenes[batch_n], data_loader.listener_ids[batch_n]
+        scene = data_loader.scenes[batch_n]
         reconstructed_audio_full_L = reconstruct_cleaned_audio(x_spec, spec_frame_size, spec_frame_step, lookahead_frame_size, lookahead_frame_step, reconstruction_overlap, verbose=verbose, n_proc=n_proc)
         # mirror the head, i.e. swap the ears over and now the right ear channel 1 is rhe reference.
         x_spec_flip = x_spec[..., [1,0,3,2,5,4]]
@@ -315,9 +327,9 @@ def main():
         output_filename = f"{output_path}/{dataset}/{scene['scene']}_cleaned_signal_16k.wav"
         sf.write(output_filename, reconstructed_audio_full, fs)
 
-        reconstructed_audio_full_44k = librosa.resample(reconstructed_audio_full, fs, 44100)
-        output_filename_44k = f"{output_path}/{dataset}/{scene['scene']}_cleaned_signal_16k.wav"
-        sf.write(output_filename_44k, reconstructed_audio_full_44k, 44100)
+        # reconstructed_audio_full_44k = librosa.resample(reconstructed_audio_full.T, fs, 44100)
+        # output_filename_44k = f"{output_path}/{dataset}/{scene['scene']}_cleaned_signal_441k.wav"
+        # sf.write(output_filename_44k, reconstructed_audio_full_44k.T, 44100)
         progbar.add(1)
 
 

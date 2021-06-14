@@ -355,26 +355,26 @@ class ClarityAudioDataloaderSequenceSpectrogramsEval(tf.keras.utils.Sequence):
         self.scenes = []
         self.listener_ids = []
         for scene in self.scenes_listeners:
-            for listener_name in self.scenes_listeners[scene]:
-                listener = self.listeners[listener_name]
-                audiogram = [listener["audiogram_levels_l"] , listener["audiogram_levels_l"]]
+            # for listener_name in self.scenes_listeners[scene]:
+            #     listener = self.listeners[listener_name]
+            #     audiogram = [listener["audiogram_levels_l"] , listener["audiogram_levels_l"]]
+            #     self.audiograms.append(audiogram)
+            #     self.listener_ids.append(listener_name)
                 # target_wav_file = f"{scene['scene']}_target.wav"
                 # CH0 = f"{scene['scene']}_mixed_CH0.wav"
-                CH1 = f"{scene}_mixed_CH1.wav"
-                CH2 = f"{scene}_mixed_CH2.wav"
-                CH3 = f"{scene}_mixed_CH3.wav"
-                self.mixed_wavfiles.append([CH1,CH2,CH3])
-                # self.target_wavfiles.append(target_wav_file)
-                self.audiograms.append(audiogram)
-                self.listener_ids.append(listener_name)
-                self.scenes.append(scene)
+            CH1 = f"{scene}_mixed_CH1.wav"
+            CH2 = f"{scene}_mixed_CH2.wav"
+            CH3 = f"{scene}_mixed_CH3.wav"
+            self.mixed_wavfiles.append([CH1,CH2,CH3])
+            # self.target_wavfiles.append(target_wav_file)
+            self.scenes.append(scene)
         if shuffling:
             idx = list(range(len(self.mixed_wavfiles)))
         # random.shuffle(idx)
         self.batch_idx = chunk_list(idx, batch_size)
         self.mixed_wavfiles = [self.mixed_wavfiles[i] for i in idx]
         # self.target_wavfiles = [self.target_wavfiles[i] for i in idx]
-        self.audiograms = [self.audiograms[i] for i in idx]
+        # self.audiograms = [self.audiograms[i] for i in idx]
 
     def __len__(self):
         return len(self.batch_idx)
@@ -424,11 +424,11 @@ class ClarityAudioDataloaderSequenceSpectrogramsEval(tf.keras.utils.Sequence):
             x_specs = np.concatenate(x_specs, axis=0)
 
             if self.return_type=="complex":
-                return x_specs, self.scenes[idx], self.listener_ids[idx]
+                return x_specs, self.scenes[idx]
             elif self.return_type=="abs":
-                return np.abs(x_specs), self.scenes[idx], self.listener_ids[idx]
+                return np.abs(x_specs), self.scenes[idx]
             elif self.return_type=="abs_phase":
-                return [np.abs(x_specs), np.angle(x_specs)], self.scenes[idx], self.listener_ids[idx]
+                return [np.abs(x_specs), np.angle(x_specs)], self.scenes[idx]
 
 
 class ClarityAudioDataloaderSequenceAudio(tf.keras.utils.Sequence):
