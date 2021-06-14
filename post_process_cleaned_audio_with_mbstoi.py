@@ -1,15 +1,14 @@
 # $PYTHON_BIN "$CLARITY_ROOT"/scripts/run_HA_processing.py  --num_channels "$num_channels" "$CLARITY_DATA"/metadata/scenes."$dataset".json "$CLARITY_DATA"/metadata/listeners.json "$CLARITY_DATA"/metadata/scenes_listeners."$dataset".json "$CLARITY_DATA"/"$dataset"/scenes "$CLARITY_DATA"/"$dataset"/scenes
 ## Set these paths
-CLARITY_ROOT = "/home/paulkendrick/clarity_CEC1"
-CLARITY_DATA = "/home/paulkendrick/clarity_CEC1/data/clarity_data"
-CFG_TEMPLATE = "/home/paulkendrick/spectrogram_based_models/modified_prerelease_combination4_smooth_template.cfg"
+CLARITY_ROOT = "/home/kenders/clarity_CEC1"
+CLARITY_DATA = "/home/kenders/clarity_CEC1/data/clarity_data"
+CFG_TEMPLATE = "/home/kenders/greenhdd/clarity_challenge/pk_speech_enhancement/spectrogram_based_model/modified_prerelease_combination4_smooth_template.cfg"
 
 
 ########
 import sys
 sys.path.append('/home/paulkendrick/clarity_CEC1/env/lib/python3.6/site-packages')
 # ls /home/paulkendrick/clarity_CEC1/env/lib/python3.6/site-packages/audio_dspy
-import audio_dspy as adsp
 import numpy as np
 import soundfile as sf
 import scipy
@@ -268,18 +267,9 @@ def compressor_twochannel(x, Fs, T, R, attackTime, releaseTime):
 #############################################################################
 # doing what run_HA_processing.py does
 # copy the 2 channel template into the GHA
-CFG_TEMPLATE_TO = f"{CLARITY_ROOT}/projects/GHA/cfg_files"
 import shutil
 import os
 from pathlib import Path
-
-shutil.copy(CFG_TEMPLATE, CFG_TEMPLATE_TO)
-dataset = "dev"
-scene_list_filename = f"{CLARITY_DATA}/metadata/scenes.{dataset}.json"
-listener_filename = f"{CLARITY_DATA}/metadata/listeners.json"
-scenes_listeners_filename = f"{CLARITY_DATA}/metadata/scenes_listeners.{dataset}.json"
-input_path = f"{CLARITY_DATA}/{dataset}/scenes"
-output_path = f"{CLARITY_DATA}/{dataset}/scenes"
 
 # output_path = "/tmp/clarity_test"
 if not Path(output_path).exists:
@@ -658,6 +648,14 @@ if __name__ == "__main__":
 
 #     channels = args.num_channels
     ############################################################################
+    CFG_TEMPLATE_TO = f"{CLARITY_ROOT}/projects/GHA/cfg_files"
+    shutil.copy(CFG_TEMPLATE, CFG_TEMPLATE_TO)
+    dataset = "dev"
+    scene_list_filename = f"{CLARITY_DATA}/metadata/scenes.{dataset}.json"
+    listener_filename = f"{CLARITY_DATA}/metadata/listeners.json"
+    scenes_listeners_filename = f"{CLARITY_DATA}/metadata/scenes_listeners.{dataset}.json"
+    input_path = f"{CLARITY_DATA}/{dataset}/scenes"
+    output_path = f"{CLARITY_DATA}/{dataset}/scenes"
 
     # from `run_HA_processing.py`
     scene_list = json.load(open(scene_list_filename, "r"))
@@ -666,98 +664,98 @@ if __name__ == "__main__":
     hearing_aid = HearingAid(fs=CONFIG.fs, channels=3)
     for scene_n, scene in enumerate(scene_list):
         for listener_name in scenes_listeners[scene["scene"]]:
-            infile_names=[
-                f"{input_path}/{scene['scene']}_mixed_CH{ch}.wav"
-                for ch in range(1, channels + 1)
-            ]
-            if all([Path(file).exists() for file in infile_names]):
-                listener = listeners[listener_name]
-                hearing_aid.set_listener(listener)
-                ##########
-                # baseline model
-                # hearing_aid.process_files(
-                #     infile_names=[
-                #         f"{input_path}/{scene['scene']}_mixed_CH{ch}.wav"
-                #         for ch in range(1, channels + 1)
-                #     ],
-                #     outfile_name=(
-                #         f"{output_path}/{scene['scene']}_{listener['name']}_HA-output.wav"
-                #     ),
-                # )
+            # infile_names=[
+            #     f"{input_path}/{scene['scene']}_mixed_CH{ch}.wav"
+            #     for ch in range(1, channels + 1)
+            # ]
+            # if all([Path(file).exists() for file in infile_names]):
+            listener = listeners[listener_name]
+            hearing_aid.set_listener(listener)
+            ##########
+            # baseline model
+            # hearing_aid.process_files(
+            #     infile_names=[
+            #         f"{input_path}/{scene['scene']}_mixed_CH{ch}.wav"
+            #         for ch in range(1, channels + 1)
+            #     ],
+            #     outfile_name=(
+            #         f"{output_path}/{scene['scene']}_{listener['name']}_HA-output.wav"
+            #     ),
+            # )
 
-                ##########
-                #  cleaned inputs as input to hearing aids
-                # hearing_aid.process_files(
-                #     infile_names=[
-                #         f"{input_path}/{scene['scene']}_cleaned_signal_441k.wav"
-                #     ],
-                #     outfile_name=(
-                #         f"{output_path}/{scene['scene']}_{listener['name']}_HA-output.wav"
-                #     ),
-                # )
+            ##########
+            #  cleaned inputs as input to hearing aids
+            # hearing_aid.process_files(
+            #     infile_names=[
+            #         f"{input_path}/{scene['scene']}_cleaned_signal_441k.wav"
+            #     ],
+            #     outfile_name=(
+            #         f"{output_path}/{scene['scene']}_{listener['name']}_HA-output.wav"
+            #     ),
+            # )
 
-                ######################################################################
-                # no hearing aid apart from what the unet does
-                # shutil.copy(f"{input_path}/{scene['scene']}_cleaned_signal_441k.wav", f"{output_path}/{scene['scene']}_{listener['name']}_HA-output.wav")
+            ######################################################################
+            # no hearing aid apart from what the unet does
+            # shutil.copy(f"{input_path}/{scene['scene']}_cleaned_signal_441k.wav", f"{output_path}/{scene['scene']}_{listener['name']}_HA-output.wav")
 
-                ######################################################################
-                # custom hearing aid
-                # window_len = int(10/16000 * 44100)
-                window_len = 11
-                audio, fs_hearing_aid = sf.read(f"{input_path}/{scene['scene']}_cleaned_signal_16k.wav")
-                fil_audio_L, fil_audio_R, max_gain_L, max_gain_R = eq_signals(
-                    audio[:,0], audio[:,1],
-                    listener["audiogram_levels_l"], listener["audiogram_levels_r"], listener["audiogram_cfs"],
-                    max_gain = 30, fs = fs_hearing_aid, window_len = window_len,
-                    max_valid_freq=7000,
-                    min_valid_freq=1500,
-                )
-                fil_audio = np.stack([fil_audio_L, fil_audio_R], 1)
-                fil_audio_compressed = compressor_twochannel(fil_audio, fs_hearing_aid, T=-6, R=5, attackTime=4e-3, releaseTime=75-3)
-                fil_audio_compressed[:,0] = soft_clip(fil_audio_compressed[:,0], clip_limit=0.99999)
-                fil_audio_compressed[:,1] = soft_clip(fil_audio_compressed[:,1], clip_limit=0.99999)
-                # print(10 * np.log10(np.mean(fil_audio_compressed**2,0))+120)
+            ######################################################################
+            # custom hearing aid
+            # window_len = int(10/16000 * 44100)
+            window_len = 11
+            audio, fs_hearing_aid = sf.read(f"{input_path}/{scene['scene']}_cleaned_signal_16k.wav")
+            fil_audio_L, fil_audio_R, max_gain_L, max_gain_R = eq_signals(
+                audio[:,0], audio[:,1],
+                listener["audiogram_levels_l"], listener["audiogram_levels_r"], listener["audiogram_cfs"],
+                max_gain = 30, fs = fs_hearing_aid, window_len = window_len,
+                max_valid_freq=7000,
+                min_valid_freq=1500,
+            )
+            fil_audio = np.stack([fil_audio_L, fil_audio_R], 1)
+            fil_audio_compressed = compressor_twochannel(fil_audio, fs_hearing_aid, T=-6, R=5, attackTime=4e-3, releaseTime=75-3)
+            fil_audio_compressed[:,0] = soft_clip(fil_audio_compressed[:,0], clip_limit=0.99999)
+            fil_audio_compressed[:,1] = soft_clip(fil_audio_compressed[:,1], clip_limit=0.99999)
+            # print(10 * np.log10(np.mean(fil_audio_compressed**2,0))+120)
 
-                # load the origianl channel 1 to find out the length:
-                original_ch1, fs = sf.read(Path(input_path) / f"{scene['scene']}_mixed_CH1.wav")
-                original_samples = original_ch1.shape[0]
-                fil_audio_compressed_44k = librosa.resample(fil_audio_compressed.T, fs_hearing_aid, 44100)
-                fil_audio_compressed_44k = fil_audio_compressed_44k[:,0:original_samples].T
-                sf.write(f"{output_path}/{scene['scene']}_{listener['name']}_HA-output.wav", fil_audio_compressed_44k, 44100, subtype="FLOAT")
-                # check the output is syncronised with the input (CH1, left ear)
-                corr = signal.correlate(original_ch1[:, 0], fil_audio_compressed_44k[: ,0], mode='full', method='auto')
-                in2_len = fil_audio_compressed_44k.shape[0]
-                in1_len = original_ch1.shape[0]
-                lags = np.arange(-in2_len + 1, in1_len)
-                delay = lags[np.argmax(np.abs(corr))]
-                assert delay == 0, "Signal is not properly synced with input"
+            # load the origianl channel 1 to find out the length:
+            original_ch1, fs = sf.read(Path(input_path) / f"{scene['scene']}_mixed_CH1.wav")
+            original_samples = original_ch1.shape[0]
+            fil_audio_compressed_44k = librosa.resample(fil_audio_compressed.T, fs_hearing_aid, 44100)
+            fil_audio_compressed_44k = fil_audio_compressed_44k[:,0:original_samples].T
+            sf.write(f"{output_path}/{scene['scene']}_{listener['name']}_HA-output.wav", fil_audio_compressed_44k, 44100, subtype="FLOAT")
+            # check the output is syncronised with the input (CH1, left ear)
+            corr = signal.correlate(original_ch1[:, 0], fil_audio_compressed_44k[: ,0], mode='full', method='auto')
+            in2_len = fil_audio_compressed_44k.shape[0]
+            in1_len = original_ch1.shape[0]
+            lags = np.arange(-in2_len + 1, in1_len)
+            delay = lags[np.argmax(np.abs(corr))]
+            assert delay == 0, "Signal is not properly synced with input"
 
-                ######################################################################
-                # Run the HL processing
-                # $PYTHON_BIN "$CLARITY_ROOT"/scripts/run_HL_processing.py  "$CLARITY_DATA"/metadata/scenes."$dataset".json "$CLARITY_DATA"/metadata/listeners.json "$CLARITY_DATA"/metadata/scenes_listeners."$dataset".json "$CLARITY_DATA"/"$dataset"/scenes "$CLARITY_DATA"/"$dataset"/scenes
-                run_HL_processing(
-                    scene,
-                    listener,
-                    input_path,
-                    output_path,
-                    CONFIG.fs,
-                )
+            ######################################################################
+            # Run the HL processing
+            # $PYTHON_BIN "$CLARITY_ROOT"/scripts/run_HL_processing.py  "$CLARITY_DATA"/metadata/scenes."$dataset".json "$CLARITY_DATA"/metadata/listeners.json "$CLARITY_DATA"/metadata/scenes_listeners."$dataset".json "$CLARITY_DATA"/"$dataset"/scenes "$CLARITY_DATA"/"$dataset"/scenes
+            run_HL_processing(
+                scene,
+                listener,
+                input_path,
+                output_path,
+                CONFIG.fs,
+            )
 
-                ######################################################################
-                # SI speech intelligbility
-                # e.g. python calculate_SI.py "../data/scenes/train.json" "../data/listeners.json" "../data/scenes_listeners.json" "../data/output/train" "../data/output/train"
-                sii = calculate_SI(
-                    scene,
-                    listener,
-                    input_path,
-                    output_path,
-                    CONFIG.fs,
-                    dry_run=False,
-                )
-                print(f"Scene {scene['scene']} listener {listener['name']} sii {round(sii,4)}\n")
-                # output_file.write(
-                #     f"Scene {scene['scene']} listener {listener['name']} sii {round(sii,4)}\n"
-                # )
+            ######################################################################
+            # SI speech intelligbility
+            # e.g. python calculate_SI.py "../data/scenes/train.json" "../data/listeners.json" "../data/scenes_listeners.json" "../data/output/train" "../data/output/train"
+            sii = calculate_SI(
+                scene,
+                listener,
+                input_path,
+                output_path,
+                CONFIG.fs,
+                dry_run=False,
+            )
+            print(f"Scene {scene['scene']} listener {listener['name']} sii {round(sii,4)}\n")
+            # output_file.write(
+            #     f"Scene {scene['scene']} listener {listener['name']} sii {round(sii,4)}\n"
+            # )
 
-    # Run the intelligibility model
-    # $PYTHON_BIN "$CLARITY_ROOT"/scripts/calculate_SI.py "$CLARITY_DATA"/metadata/scenes."$dataset".json "$CLARITY_DATA"/metadata/listeners.json "$CLARITY_DATA"/metadata/scenes_listeners."$dataset".json "$CLARITY_DATA"/"$dataset"/scenes "$CLARITY_DATA"/"$dataset"/scenes
+# Run the intelligibility model
+# $PYTHON_BIN "$CLARITY_ROOT"/scripts/calculate_SI.py "$CLARITY_DATA"/metadata/scenes."$dataset".json "$CLARITY_DATA"/metadata/listeners.json "$CLARITY_DATA"/metadata/scenes_listeners."$dataset".json "$CLARITY_DATA"/"$dataset"/scenes "$CLARITY_DATA"/"$dataset"/scenes

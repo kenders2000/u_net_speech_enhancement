@@ -20,6 +20,8 @@ from functools import partial
 import multiprocessing as mp
 import pathlib
 
+
+
 def chunk_list(input_list, chunk_size):
     """Convert list into a list of lists."""
     return [
@@ -68,11 +70,11 @@ def reconstruct_cleaned_audio(
         lookahead_frame_step,
         reconstruction_overlap,
         verbose=0,
-         n_proc=8
+         n_proc=8,
+
 
 ):
     """Reconstruct cleaned audio from clean spectrograms.
-
     Note this requires a global keras model `model` (faster than passing as an argument.)
 
     Args:
@@ -222,8 +224,8 @@ def main():
     ap.add_argument(
         "-p",
         type=str,
-        dest="path_to_model_starting_point",
-        help="Path a starting point for the model.",
+        dest="path_to_model",
+        help="Path a a trained keras model.",
         default="/home/kenders/greenhdd/clarity_challenge/pk_speech_enhancement/models/9_0.01611/",
         # default="/home/ubuntu/spectrogram_based_model/models/9_0.01611/",
     )
@@ -243,13 +245,18 @@ def main():
     spec_frame_step = spec_frame_size // 4 #int(fs * 5e-3) // 2
 
     channels_in = 6
+    # the input processing window size
     lookahead_frame_size = int(6.0*fs)
+    # the maximum lookahead in the clarity challenge rules
     causal_buffer = int(np.floor(5e-3 * fs))
+    # samples to overlap each buffer
     reconstruction_overlap = 10
-    lookahead_frame_step = int(causal_buffer) - 10
+    # Hop size for input frames
+    lookahead_frame_step = int(causal_buffer) - reconstruction_overlap
     batch_size = 1
     print("Loading model")
-    model = tf.keras.models.load_model(args.path_to_model_starting_point)
+    global model
+    model = tf.keras.models.load_model(args.path_to_model)
     # model = tf.keras.models.load_model("/home/ubuntu/spectrogram_based_model/models/9_0.01611/")
 
     model.summary()
