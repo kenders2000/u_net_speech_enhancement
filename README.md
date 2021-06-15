@@ -1,3 +1,8 @@
+# Clarity Enhancement challenge
+
+This is a draft of what will become a public repo. Currently the github repo
+is set to private while I improve the documentation etc.
+
 # Installation
 1) install docker
   https://docs.docker.com/engine/install/ubuntu/
