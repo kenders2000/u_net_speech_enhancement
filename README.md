@@ -14,11 +14,25 @@
   ```
 4) run the container, attach the spectrum_based_model folder.
   ```bash:
-  docker run --volume=/home/ubuntu/spectrogram_based_model:/home/ubuntu/spectrogram_based_model -p 8888:8888 -it kenders:tf-clarity zsh
+  docker run --volume=/home/ubuntu/spectrogram_based_model:/home/ubuntu/spectrogram_based_model -p 8888:8888 -it username:tf-clarity zsh
   ```
 5) additional environment steps:
 ```bash:
 source ${CLARITY_ROOT}/env/bin/activate
-(cd /home/paulkendrick/spectrogram_based_models/env && ./make_links.sh paulkendrick /home/paulkendrick/spectrogram_based_models/example_data)
-source /home/paulkendrick/clarity_CEC1/tools/openMHA/bin/thismha.sh
+(cd /home/ubuntu/spectrogram_based_model/env && ./make_links.sh ubuntu /home/ubuntu/spectrogram_based_model/example_data)
+source /home/ubuntu/clarity_CEC1/tools/openMHA/bin/thismha.sh
 ```
+
+# To train a model.
+`python train_unet.py -c /path/to/model_checkpoints`
+
+# To Predict the cleaned audio.
+`python predict_with_trained_unet.py -p /path/to/trained_model -d <dataset>`
+
+Saves into the clarity repo via the symlink, into the appropriate dataset dir.
+
+# To generate evaluation data.
+`python post_process_cleaned_audio_eval.py -p /path/to/trained_model -d <dataset> -i /path/to/cleaned_data -o /path/to/write_hearing_aid_files -s /path/to/clarity/dataset`
+
+# To get SII for dev data:
+post_process_cleaned_audio_with_mbstoi.py

@@ -30,12 +30,24 @@ def main():
         default=None
         # default="/home/kenders/greenhdd/clarity_challenge/pk_speech_enhancement/models/1_2.121e-07/",
     )
+    ap.add_argument(
+        "-c",
+        type=str,
+        dest="checkpoint_filepath",
+        help="Location to save model checkpoints.",
+        default = '/home/kenders/greenhdd/clarity_challenge/pk_speech_enhancement/models',
+        # default="/home/kenders/greenhdd/clarity_challenge/pk_speech_enhancement/models/1_2.121e-07/",
+    )
+    checkpoint_filepath = Path(args.checkpoint_filepath)
+    if not checkpoint_filepath.exists():
+        os.makedirs(checkpoint_filepath)
+
     args = ap.parse_args()
     eps = 1e-9
     fs = 16000
 
-    spec_frame_size = 1024 # odd fft ensures even rfft
-    spec_frame_step = spec_frame_size // 4 #int(fs * 5e-3) // 2
+    spec_frame_size = 1024
+    spec_frame_step = spec_frame_size // 4
 
     channels_in = 6
     lookahead_frame_size = int(6.0*fs)
@@ -89,11 +101,6 @@ def main():
     loss_fn = tf.keras.losses.MeanAbsoluteError(
         reduction="auto", name="mean_absolute_error"
     )
-
-
-    checkpoint_filepath = Path('/home/kenders/greenhdd/clarity_challenge/pk_speech_enhancement/models')
-    if not checkpoint_filepath.exists():
-        os.makedirs(checkpoint_filepath)
 
     epochs = 20
     sub_batch_size = 3

@@ -93,6 +93,7 @@ def reconstruct_cleaned_audio(
 
     for x in tqdm.tqdm(x_spec, disable=display_progress_bar):
         x_cleaned_abs = model.predict(tf.expand_dims(tf.math.abs(x), 0))[0,...,0]
+        # grab the noisy phase from Ch1 left ear
         x_phase_noisy = np.angle(x[...,0])
         x_cleaned_complex = x_cleaned_abs * (np.cos(x_phase_noisy) + np.sin(x_phase_noisy)*1.j)
 
@@ -100,6 +101,7 @@ def reconstruct_cleaned_audio(
         x_cleaned_complex = np.transpose(x_cleaned_complex, [1, 0])
         # Luckily because the  audio length (96000) is an integer multiple of the hop size(256)
         # no padding of the signal is required, this is just pure luck!!
+        import ipdb; ipdb.set_trace()
         reconstructed = librosa.istft(x_cleaned_complex, hop_length=spec_frame_step, win_length=spec_frame_size, length=lookahead_frame_size)
         # grab the last `lookahead_frame_step
         out.append(reconstructed[(lookahead_frame_size-lookahead_frame_step-reconstruction_overlap):lookahead_frame_size])
@@ -111,6 +113,10 @@ def reconstruct_cleaned_audio(
     )
     return out
 
+def infinite_sequence():
+    num = 0
+    while True:
+        yield num
 
 
 def reconstruct_cleaned_audio_mp(
@@ -226,8 +232,9 @@ def main():
         type=str,
         dest="path_to_model",
         help="Path a a trained keras model.",
-        default="/home/kenders/greenhdd/clarity_challenge/pk_speech_enhancement/models/9_0.01611/",
-        # default="/home/ubuntu/spectrogram_based_model/models/9_0.01611/",
+        # default="/home/kenders/greenhdd/clarity_challenge/pk_speech_enhancement/models/9_0.01611/",
+        default="/home/ubuntu/spectrogram_based_model/models/9_0.01611/",
+        # default="/home/paulkendrick/spectrogram_based_models/models/9_0.01611/",
     )
     ap.add_argument(
         "-d",
@@ -260,8 +267,9 @@ def main():
     # model = tf.keras.models.load_model("/home/ubuntu/spectrogram_based_model/models/9_0.01611/")
 
     model.summary()
-    n_proc = 7
+    multi_proc = True
     verbose = 0
+    n_proc = 16
 
     # for the train and dev sets usinf ClarityAudioDataloaderSequenceSpectrograms
     if dataset == "dev" or dataset =="train":
@@ -311,9 +319,10 @@ def main():
     # enq = tf.keras.utils.OrderedEnqueuer(data_loader, use_multiprocessing=False)
     # enq.start(workers=1)
     # gen = enq.get()
-
-    progbar = tf.keras.utils.Progbar(len(data_loader))
-    for batch_n in range(len(data_loader)):
+    # progbar.add(len(data_loader)//2)
+    n = 0
+    progbar = tf.keras.utils.Progbar(len(data_loader) -n)
+    for batch_n in range(n, len(data_loader)):
         # when using prefetching (uses too much memory)
         # x_spec, scene = next(gen)
 
@@ -322,12 +331,22 @@ def main():
 
         # for the dev and train set, using ClarityAudioDataloaderSequenceSpectrograms
         assert data_loader.shuffling == False, "Shuffling must be disabled"
+        # if multi_proc:
+        #     x_spec, scene = next(gen)
+        # else:
         x_spec, y_spec = data_loader[batch_n]
+
         scene = data_loader.scenes[batch_n]
-        reconstructed_audio_full_L = reconstruct_cleaned_audio(x_spec, spec_frame_size, spec_frame_step, lookahead_frame_size, lookahead_frame_step, reconstruction_overlap, verbose=verbose, n_proc=n_proc)
+        if multi_proc:
+            reconstructed_audio_full_L = reconstruct_cleaned_audio_mp(x_spec, spec_frame_size, spec_frame_step, lookahead_frame_size, lookahead_frame_step, reconstruction_overlap, verbose=verbose, n_proc=n_proc)
+        else:
+            reconstructed_audio_full_L = reconstruct_cleaned_audio(x_spec, spec_frame_size, spec_frame_step, lookahead_frame_size, lookahead_frame_step, reconstruction_overlap, verbose=verbose, n_proc=n_proc)
         # mirror the head, i.e. swap the ears over and now the right ear channel 1 is rhe reference.
         x_spec_flip = x_spec[..., [1,0,3,2,5,4]]
-        reconstructed_audio_full_R = reconstruct_cleaned_audio(x_spec_flip, spec_frame_size, spec_frame_step, lookahead_frame_size, lookahead_frame_step, reconstruction_overlap, verbose=verbose, n_proc=n_proc)
+        if multi_proc:
+            reconstructed_audio_full_R = reconstruct_cleaned_audio_mp(x_spec_flip, spec_frame_size, spec_frame_step, lookahead_frame_size, lookahead_frame_step, reconstruction_overlap, verbose=verbose, n_proc=n_proc)
+        else:
+            reconstructed_audio_full_R = reconstruct_cleaned_audio(x_spec_flip, spec_frame_size, spec_frame_step, lookahead_frame_size, lookahead_frame_step, reconstruction_overlap, verbose=verbose, n_proc=n_proc)
         reconstructed_audio_full = np.stack([reconstructed_audio_full_L, reconstructed_audio_full_R], axis=1)
 
 

@@ -32,7 +32,17 @@ from clarity_core.config import CONFIG
 
 
 def sync_y_to_x(x, y):
-    """
+    """Synchronises y to x.
+    Carries out a cross coreelation between x and y, uses the arg max of the
+    result to determine the relative delay between the two. And applies the delay
+    to y before returning the delayed version of y
+    
+    Args:
+        x: The reference
+        y: the signal that is to be synced
+    Returns
+        y_d: the delayed signal.
+
     """
     corr = signal.correlate(x, y, mode='full', method='auto')
     in2_len = x.shape[0]
@@ -53,7 +63,10 @@ def frame_audio(x, frame_size, frame_step):
     Pre-pads `frame_size` zeros before splitting audio into `frame_size` frames, using frame_step
     to overlap frames. The pre-padding of `frame_size` zeros is so that we can extract the last
     `frame_step` samples of each frame and have a framed processing system that only looks ahead
-    `frame_step` samples.
+    `frame_step` samples. Note as pre padding is `frame_size`, the first
+    resulting frame is all because of padding and the signal actually starts
+    with the second frame.
+
     Args:
         x: the audio (channels ,samples, )
         frame_size (int): The frame szie, the audio is prepended with zeros of this length in the
