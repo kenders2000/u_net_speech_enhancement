@@ -337,7 +337,8 @@ class ClarityAudioDataloaderSequenceSpectrogramsEval(tf.keras.utils.Sequence):
                  subset_size_ratio=None,
                  n_proc=8,
                  shuffling=True,
-                 team=".E010"
+                 team=".E010",
+                 audio_path_dataset_name="eval2"
                 ):
         """
         """
@@ -346,7 +347,8 @@ class ClarityAudioDataloaderSequenceSpectrogramsEval(tf.keras.utils.Sequence):
         # scene_list_filename = pathlib.Path(PATH_TO_CLARITY_FOLDER) / "data" / "clarity_data" / "metadata" / f"scenes.{dataset}.json"
         listener_filename =  pathlib.Path(PATH_TO_CLARITY_FOLDER) / "data" / "clarity_data"/ "metadata" / f"listeners.{dataset}.json"
         scenes_listeners_filename =  pathlib.Path(PATH_TO_CLARITY_FOLDER) / "data" / "clarity_data" / "metadata" / f"scenes_listeners.{dataset}{team}.json"
-        self.path_to_wavs = pathlib.Path(PATH_TO_CLARITY_FOLDER) / "data" / "clarity_data" / f"{dataset}" / "scenes"
+
+        self.path_to_wavs = pathlib.Path(PATH_TO_CLARITY_FOLDER) / "data" / "clarity_data" / f"{audio_path_dataset_name}" / "scenes"
         # self.scene_list = json.load(open(scene_list_filename, "r"))
         self.listeners = json.load(open(listener_filename, "r"))
         self.scenes_listeners = json.load(open(scenes_listeners_filename, "r"))
