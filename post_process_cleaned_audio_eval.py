@@ -264,7 +264,7 @@ if __name__ == "__main__":
         type=str,
         dest="dataset",
         help="Dataset train eval or dev.",
-        default="eval",
+        default="eval2",
     )
     ap.add_argument(
         "-i",
@@ -279,15 +279,20 @@ if __name__ == "__main__":
         type=str,
         dest="output_path",
         help="Where to write the outputs to.",
-        default="~/data/submission/cleaned_scenes/eval",
+        # default="~/data/submission/cleaned_scenes/eval",
+        default="/home/kenders/greenhdd/clarity_challenge/data/listening_test_data"
     )
     ap.add_argument(
         "-s",
         type=str,
         dest="clarity_data",
         help="Location of clarity dataset.",
-        default="~/data/Data/clarity_CEC1_data/clarity_data/",
+        # default="~/data/Data/clarity_CEC1_data/clarity_data/",
+        default="/home/kenders/greenhdd/clarity_challenge/data/clarity_CEC1_data/clarity_data/"
     )
+
+
+
     args = ap.parse_args()
     dataset = args.dataset
     input_path = Path(args.input_path).expanduser().as_posix()
@@ -298,7 +303,7 @@ if __name__ == "__main__":
         # CLARITY_DATA = (Path(CLARITY_ROOT) / "data/clarity_data")
         # scene_list_filename = f"{clarity_data}/metadata/scenes.{dataset}.json"
         listener_filename = f"{clarity_data}/metadata/listeners.{dataset}.json"
-        scenes_listeners_filename = f"{clarity_data}/metadata/scenes_listeners.{dataset}.json"
+        scenes_listeners_filename = f"{clarity_data}/metadata/scenes_listeners.{dataset}.E010.json"
         # input_path = f"{CLARITY_DATA}/{dataset}/scenes"
         # output_path = f"{CLARITY_DATA}/{dataset}/scenes"
     else:

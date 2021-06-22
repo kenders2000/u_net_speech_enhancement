@@ -232,8 +232,8 @@ def main():
         type=str,
         dest="path_to_model",
         help="Path a a trained keras model.",
-        # default="/home/kenders/greenhdd/clarity_challenge/pk_speech_enhancement/models/9_0.01611/",
-        default="/home/ubuntu/spectrogram_based_model/models/9_0.01611/",
+        default="/home/kenders/greenhdd/clarity_challenge/pk_speech_enhancement/models/9_0.01611/",
+        # default="/home/ubuntu/spectrogram_based_model/models/9_0.01611/",
         # default="/home/paulkendrick/spectrogram_based_models/models/9_0.01611/",
     )
     ap.add_argument(
@@ -241,7 +241,7 @@ def main():
         type=str,
         dest="dataset",
         help="Dataset train eval or dev.",
-        default="dev",
+        default="eval2",
     )
     args = ap.parse_args()
     dataset = args.dataset
@@ -267,9 +267,9 @@ def main():
     # model = tf.keras.models.load_model("/home/ubuntu/spectrogram_based_model/models/9_0.01611/")
 
     model.summary()
-    multi_proc = True
+    multi_proc = False
     verbose = 0
-    n_proc = 16
+    n_proc = 1
 
     # for the train and dev sets usinf ClarityAudioDataloaderSequenceSpectrograms
     if dataset == "dev" or dataset =="train":
@@ -292,7 +292,7 @@ def main():
         # frames = x_spec.shape[1]
         # bins = x_spec.shape[2]
         # channels = x_spec.shape[3]
-    elif dataset == "eval":
+    elif dataset == "eval" or dataset == "eval2":
         # just when using the eval set (as there are no targets) usding
         # ClarityAudioDataloaderSequenceSpectrogramsRval
         # dataset = "eval"

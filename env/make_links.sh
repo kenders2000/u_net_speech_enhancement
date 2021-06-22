@@ -26,7 +26,7 @@ TOP_DIR=clarity_CEC1_data
 # Add a link to the downloaded hrirs (downloaded to the repo when installed) into the data dir (not in the repo)
 (
     cd "$TARGET_DIR"/"$TOP_DIR"/clarity_data || exit;
-    # rm hrir;
+    rm hrir;
     ln -s "$CLARITY_ROOT"/data/hrir hrir
 )
 

@@ -1,8 +1,8 @@
 # $PYTHON_BIN "$CLARITY_ROOT"/scripts/run_HA_processing.py  --num_channels "$num_channels" "$CLARITY_DATA"/metadata/scenes."$dataset".json "$CLARITY_DATA"/metadata/listeners.json "$CLARITY_DATA"/metadata/scenes_listeners."$dataset".json "$CLARITY_DATA"/"$dataset"/scenes "$CLARITY_DATA"/"$dataset"/scenes
 ## Set these paths
-CLARITY_ROOT = "/home/kenders/clarity_CEC1"
-CLARITY_DATA = "/home/kenders/clarity_CEC1/data/clarity_data"
-CFG_TEMPLATE = "/home/kenders/greenhdd/clarity_challenge/pk_speech_enhancement/spectrogram_based_model/modified_prerelease_combination4_smooth_template.cfg"
+CLARITY_ROOT = "/home/paulkendrick/clarity_CEC1"
+CLARITY_DATA = "/home/paulkendrick/clarity_CEC1/data/clarity_data"
+CFG_TEMPLATE = "/home/paulkendrick/greenhdd/clarity_challenge/pk_speech_enhancement/spectrogram_based_model/modified_prerelease_combination4_smooth_template.cfg"
 
 
 ########
@@ -111,7 +111,7 @@ def eq_signals(
     filter = signal.firwin(window_len, [40/nyq, high], pass_zero=False)
     # sos = signal.butter(order, low, btype='low', output='sos')
     filters.append(filter)
-    print("lowpass", high*nyq)
+    # print("lowpass", high*nyq)
     # define all band pass filters
     for n in range(1, len(audiogram_cfs_)-1):
         fc = audiogram_cfs_[n]
@@ -121,7 +121,7 @@ def eq_signals(
         high = highcut / nyq
         # filter = signal.butter(order, [low, high], btype='band', output='sos')
         filter = signal.firwin(window_len, [low, high], pass_zero=False)
-        print("bandpass",low*nyq,fc, high*nyq)
+        # print("bandpass",low*nyq,fc, high*nyq)
         filters.append(filter)
 
     # last filter is high pass
@@ -129,7 +129,7 @@ def eq_signals(
     # filter = signal.butter(order*2, high, btype='high', output='sos')
     filter = signal.firwin(window_len, [low, 0.999], pass_zero=False)
     filters.append(filter)
-    print("highpass", low*nyq)
+    # print("highpass", low*nyq)
     # filter the signal
     out_L = []
     out_R = []
@@ -271,7 +271,7 @@ import shutil
 import os
 from pathlib import Path
 
-# output_path = "/tmp/clarity_test"
+output_path = "/tmp/clarity_test"
 if not Path(output_path).exists:
     os.makedirs(output_path)
 channels = 1
@@ -649,7 +649,7 @@ if __name__ == "__main__":
 #     channels = args.num_channels
     ############################################################################
     CFG_TEMPLATE_TO = f"{CLARITY_ROOT}/projects/GHA/cfg_files"
-    shutil.copy(CFG_TEMPLATE, CFG_TEMPLATE_TO)
+    # shutil.copy(CFG_TEMPLATE, CFG_TEMPLATE_TO)
     dataset = "dev"
     scene_list_filename = f"{CLARITY_DATA}/metadata/scenes.{dataset}.json"
     listener_filename = f"{CLARITY_DATA}/metadata/listeners.json"
@@ -662,8 +662,14 @@ if __name__ == "__main__":
     listeners = json.load(open(listener_filename, "r"))
     scenes_listeners = json.load(open(scenes_listeners_filename, "r"))
     hearing_aid = HearingAid(fs=CONFIG.fs, channels=3)
-    for scene_n, scene in enumerate(scene_list):
+    # for scene_n, scene in enumerate(scene_list):
+    import time
+
+    for scene_n in range(1945, len(scene_list)):
+        scene = scene_list[scene_n]
         for listener_name in scenes_listeners[scene["scene"]]:
+            iteration_start = time.time()
+
             # infile_names=[
             #     f"{input_path}/{scene['scene']}_mixed_CH{ch}.wav"
             #     for ch in range(1, channels + 1)
@@ -728,7 +734,8 @@ if __name__ == "__main__":
             in1_len = original_ch1.shape[0]
             lags = np.arange(-in2_len + 1, in1_len)
             delay = lags[np.argmax(np.abs(corr))]
-            assert delay == 0, "Signal is not properly synced with input"
+            if delay != 0:
+                print(f"Left ear Signal is not properly synced with input {scene['scene']} {listener_name} delay {delay}")
 
             ######################################################################
             # Run the HL processing
@@ -753,9 +760,35 @@ if __name__ == "__main__":
                 dry_run=False,
             )
             print(f"Scene {scene['scene']} listener {listener['name']} sii {round(sii,4)}\n")
-            # output_file.write(
-            #     f"Scene {scene['scene']} listener {listener['name']} sii {round(sii,4)}\n"
-            # )
+            with open(f"{output_path}/dev_data_performance_macbook_last.txt", "a") as output_file:
+                output_file.write(
+                    f"Scene {scene['scene']} listener {listener['name']} sii {round(sii,4)}\n"
+                )
+            iteration_end = time.time()
+            # print(f"iteration time {iteration_end-iteration_start}")
 
 # Run the intelligibility model
 # $PYTHON_BIN "$CLARITY_ROOT"/scripts/calculate_SI.py "$CLARITY_DATA"/metadata/scenes."$dataset".json "$CLARITY_DATA"/metadata/listeners.json "$CLARITY_DATA"/metadata/scenes_listeners."$dataset".json "$CLARITY_DATA"/"$dataset"/scenes "$CLARITY_DATA"/"$dataset"/scenes
+# import csv
+# scenes = {}
+# with open('performance.csv', newline='') as csvfile:
+#     reader = csv.reader(csvfile, delimiter=' ', quotechar='|')
+#     for n,row in enumerate(reader):
+#         if n> 0:
+#             scene = row[1]
+#             listener = row[3]
+#             sii = float(row[5].split(",")[0])
+#             print(sii)
+#             scenes.setdefault(scene,{}).update({listener: sii})
+#
+# for n in range(6001, 8500):
+#     if f"S0{n}" not in scenes:
+#         print(n)
+#
+# sii = 0
+# n = 0
+# for scene in scenes:
+#     for listener in scenes[scene]:
+#         sii +=scenes[scene][listener]
+#         n+=1
+# print(sii/n)

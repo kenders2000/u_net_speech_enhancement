@@ -36,7 +36,7 @@ def sync_y_to_x(x, y):
     Carries out a cross coreelation between x and y, uses the arg max of the
     result to determine the relative delay between the two. And applies the delay
     to y before returning the delayed version of y
-    
+
     Args:
         x: The reference
         y: the signal that is to be synced
@@ -337,6 +337,7 @@ class ClarityAudioDataloaderSequenceSpectrogramsEval(tf.keras.utils.Sequence):
                  subset_size_ratio=None,
                  n_proc=8,
                  shuffling=True,
+                 team=".E010"
                 ):
         """
         """
@@ -344,7 +345,7 @@ class ClarityAudioDataloaderSequenceSpectrogramsEval(tf.keras.utils.Sequence):
 
         # scene_list_filename = pathlib.Path(PATH_TO_CLARITY_FOLDER) / "data" / "clarity_data" / "metadata" / f"scenes.{dataset}.json"
         listener_filename =  pathlib.Path(PATH_TO_CLARITY_FOLDER) / "data" / "clarity_data"/ "metadata" / f"listeners.{dataset}.json"
-        scenes_listeners_filename =  pathlib.Path(PATH_TO_CLARITY_FOLDER) / "data" / "clarity_data" / "metadata" / f"scenes_listeners.{dataset}.json"
+        scenes_listeners_filename =  pathlib.Path(PATH_TO_CLARITY_FOLDER) / "data" / "clarity_data" / "metadata" / f"scenes_listeners.{dataset}{team}.json"
         self.path_to_wavs = pathlib.Path(PATH_TO_CLARITY_FOLDER) / "data" / "clarity_data" / f"{dataset}" / "scenes"
         # self.scene_list = json.load(open(scene_list_filename, "r"))
         self.listeners = json.load(open(listener_filename, "r"))
@@ -381,8 +382,7 @@ class ClarityAudioDataloaderSequenceSpectrogramsEval(tf.keras.utils.Sequence):
             self.mixed_wavfiles.append([CH1,CH2,CH3])
             # self.target_wavfiles.append(target_wav_file)
             self.scenes.append(scene)
-        if shuffling:
-            idx = list(range(len(self.mixed_wavfiles)))
+        idx = list(range(len(self.mixed_wavfiles)))
         # random.shuffle(idx)
         self.batch_idx = chunk_list(idx, batch_size)
         self.mixed_wavfiles = [self.mixed_wavfiles[i] for i in idx]
