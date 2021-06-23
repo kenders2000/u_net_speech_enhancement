@@ -101,7 +101,6 @@ def reconstruct_cleaned_audio(
         x_cleaned_complex = np.transpose(x_cleaned_complex, [1, 0])
         # Luckily because the  audio length (96000) is an integer multiple of the hop size(256)
         # no padding of the signal is required, this is just pure luck!!
-        import ipdb; ipdb.set_trace()
         reconstructed = librosa.istft(x_cleaned_complex, hop_length=spec_frame_step, win_length=spec_frame_size, length=lookahead_frame_size)
         # grab the last `lookahead_frame_step
         out.append(reconstructed[(lookahead_frame_size-lookahead_frame_step-reconstruction_overlap):lookahead_frame_size])
@@ -285,7 +284,8 @@ def main():
             verbose=0,
             return_type="complex",
             n_proc=1,
-            shuffling=False
+            shuffling=False,
+            audio_path_dataset_name=dataset
         )
         # test the dataloader
         # x_spec, y_spec = data_loader[0]
@@ -308,7 +308,8 @@ def main():
             verbose=0,
             return_type="complex",
             n_proc=1,
-            shuffling=False
+            shuffling=False,
+            audio_path_dataset_name="eval"
         )
     else:
         raise RuntimeError("Unsupported dataset")
@@ -330,7 +331,7 @@ def main():
         # x_spec, scene = data_loader[batch_n]
 
         # for the dev and train set, using ClarityAudioDataloaderSequenceSpectrograms
-        assert data_loader.shuffling == False, "Shuffling must be disabled"
+        # assert data_loader.shuffling == False, "Shuffling must be disabled"
         # if multi_proc:
         #     x_spec, scene = next(gen)
         # else:
@@ -349,8 +350,8 @@ def main():
             reconstructed_audio_full_R = reconstruct_cleaned_audio(x_spec_flip, spec_frame_size, spec_frame_step, lookahead_frame_size, lookahead_frame_step, reconstruction_overlap, verbose=verbose, n_proc=n_proc)
         reconstructed_audio_full = np.stack([reconstructed_audio_full_L, reconstructed_audio_full_R], axis=1)
 
-
-        output_filename = f"{output_path}/{dataset}/{scene['scene']}_cleaned_signal_16k.wav"
+        output_filename = f"{output_path}/eval/{scene}_cleaned_signal_16k.wav"
+        # output_filename = f"{output_path}/{dataset}/{scene['scene']}_cleaned_signal_16k.wav"
         sf.write(output_filename, reconstructed_audio_full, fs)
 
         # reconstructed_audio_full_44k = librosa.resample(reconstructed_audio_full.T, fs, 44100)

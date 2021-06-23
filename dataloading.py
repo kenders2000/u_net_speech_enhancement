@@ -338,7 +338,7 @@ class ClarityAudioDataloaderSequenceSpectrogramsEval(tf.keras.utils.Sequence):
                  n_proc=8,
                  shuffling=True,
                  team=".E010",
-                 audio_path_dataset_name="eval2"
+                 audio_path_dataset_name="eval"
                 ):
         """
         """
@@ -370,6 +370,7 @@ class ClarityAudioDataloaderSequenceSpectrogramsEval(tf.keras.utils.Sequence):
         self.subset_size_ratio = subset_size_ratio
         self.scenes = []
         self.listener_ids = []
+        self.shuffling = shuffling
         for scene in self.scenes_listeners:
             # for listener_name in self.scenes_listeners[scene]:
             #     listener = self.listeners[listener_name]
