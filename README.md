@@ -1,7 +1,6 @@
 # Clarity Enhancement challenge
 
-This is a draft of what will become a public repo. Currently the github repo
-is set to private while I improve the documentation etc.
+This my entry to the [clarity enhancement challenge](https://github.com/claritychallenge/clarity_CEC1/) to enhance speech for the hearing impaired.
 
 # Installation
 1) install docker
