@@ -40,16 +40,9 @@ This my entry to the [clarity enhancement challenge](https://github.com/clarityc
 
   Set up the openMHA binaries to be easily executable.
   ```bash:
-  source /home/username/clarity_CEC1/tools/openMHA/bin/thismha.sh
+  source /home/kenders/clarity_CEC1/tools/openMHA/bin/thismha.sh
   ```
 
-  Install python dependancies (note these should already be available in the
-  container, but they are not for some reason: investigate at some point...)
-  ```bash:
-  pip install ipdb pudb jupyterlab matplotlib dash jupyter-dash plotly chart_studio librosa
-  pip install tensorflow_io tqdm tensorflow
-  pip install jedi==0.17.2
-  ```
 # To train a model.
 `python train_unet.py -c /path/to/model_checkpoints`
 
@@ -57,6 +50,10 @@ This my entry to the [clarity enhancement challenge](https://github.com/clarityc
 `python predict_with_trained_unet.py -p /path/to/trained_model -d <dataset>`
 
 Saves into the clarity repo via the symlink, into the appropriate dataset dir.
+
+to predict using the example dataset:
+
+`python predict_with_trained_unet.py -p /path/to/trained_model -d dev`
 
 # To generate evaluation data.
 `python post_process_cleaned_audio_eval.py -p /path/to/trained_model -d <dataset> -i /path/to/cleaned_data -o /path/to/write_hearing_aid_files -s /path/to/clarity/dataset`

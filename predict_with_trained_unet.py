@@ -348,10 +348,10 @@ def main():
         else:
             reconstructed_audio_full_R = reconstruct_cleaned_audio(x_spec_flip, spec_frame_size, spec_frame_step, lookahead_frame_size, lookahead_frame_step, reconstruction_overlap, verbose=verbose, n_proc=n_proc)
         reconstructed_audio_full = np.stack([reconstructed_audio_full_L, reconstructed_audio_full_R], axis=1)
-
-        output_filename = f"{output_path}/eval/{scene}_cleaned_signal_16k.wav"
-        # output_filename = f"{output_path}/{dataset}/{scene['scene']}_cleaned_signal_16k.wav"
-        import ipdb; ipdb.set_trace()
+        if dataset == "dev" or dataset =="train":
+            output_filename = f"{output_path}/{dataset}/{scene['scene']}_cleaned_signal_16k.wav"
+        elif dataset == "eval" or dataset == "eval2":
+            output_filename = f"{output_path}/eval/{scene}_cleaned_signal_16k.wav"
         sf.write(output_filename, reconstructed_audio_full, fs)
 
         # reconstructed_audio_full_44k = librosa.resample(reconstructed_audio_full.T, fs, 44100)
