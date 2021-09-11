@@ -270,7 +270,7 @@ def main():
     verbose = 0
     n_proc = 1
 
-    # for the train and dev sets usinf ClarityAudioDataloaderSequenceSpectrograms
+    # for the train and dev sets use ClarityAudioDataloaderSequenceSpectrograms
     if dataset == "dev" or dataset =="train":
         data_loader = ClarityAudioDataloaderSequenceSpectrograms(
             dataset=dataset,
@@ -285,7 +285,6 @@ def main():
             return_type="complex",
             n_proc=1,
             shuffling=False,
-            audio_path_dataset_name=dataset
         )
         # test the dataloader
         # x_spec, y_spec = data_loader[0]
@@ -293,7 +292,7 @@ def main():
         # bins = x_spec.shape[2]
         # channels = x_spec.shape[3]
     elif dataset == "eval" or dataset == "eval2":
-        # just when using the eval set (as there are no targets) usding
+        # just when using the eval set (as there are no targets) using
         # ClarityAudioDataloaderSequenceSpectrogramsRval
         # dataset = "eval"
         data_loader = ClarityAudioDataloaderSequenceSpectrogramsEval(
@@ -352,6 +351,7 @@ def main():
 
         output_filename = f"{output_path}/eval/{scene}_cleaned_signal_16k.wav"
         # output_filename = f"{output_path}/{dataset}/{scene['scene']}_cleaned_signal_16k.wav"
+        import ipdb; ipdb.set_trace()
         sf.write(output_filename, reconstructed_audio_full, fs)
 
         # reconstructed_audio_full_44k = librosa.resample(reconstructed_audio_full.T, fs, 44100)
