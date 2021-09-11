@@ -25,11 +25,6 @@ This my entry to the [clarity enhancement challenge](https://github.com/clarityc
 
 5) additional environment steps:
 
-  activate the virtual env
-  ```bash:
-  source ${CLARITY_ROOT}/env/bin/activate
-  ```
-
   Setup all the symlinks,  in the following we point to the data in
   `/home/username/u_net_speech_enhancement/example_data` this contains a few examples
   from the dev set of the clarity challenge, if you have the full data set, replace
@@ -42,6 +37,13 @@ This my entry to the [clarity enhancement challenge](https://github.com/clarityc
   ```bash:
   source /home/kenders/clarity_CEC1/tools/openMHA/bin/thismha.sh
   ```
+
+  Note: I do not use the Clarity virutal env, but to activate that if required:
+  ```bash:
+  source ${CLARITY_ROOT}/env/bin/activate
+  ```
+
+
 
 # To train a model.
 `python train_unet.py -c /path/to/model_checkpoints`
