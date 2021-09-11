@@ -267,30 +267,55 @@ if __name__ == "__main__":
         default="eval2",
     )
     ap.add_argument(
+        "-dp",
+        type=str,
+        dest="audio_path_dataset_name",
+        help="Dataset train eval or dev, because there is not a `eval2` dataset",
+        default="eval",
+    )
+    ap.add_argument(
         "-i",
         type=str,
         dest="input_path",
         help="Location of the cleaned signals.",
-        default="~/data/submission/cleaned_scenes/eval",
-
+        # default="~/data/submission/cleaned_scenes/eval",
+        default="~/data/Data/cleaned_eval2_data",
     )
     ap.add_argument(
         "-o",
         type=str,
         dest="output_path",
         help="Where to write the outputs to.",
+        default="~/data/Data/cleaned_eval2_data",
         # default="~/data/submission/cleaned_scenes/eval",
-        default="/home/kenders/greenhdd/clarity_challenge/data/listening_test_data"
+        # default="/home/kenders/greenhdd/clarity_challenge/data/listening_test_data"
     )
     ap.add_argument(
         "-s",
         type=str,
         dest="clarity_data",
         help="Location of clarity dataset.",
-        # default="~/data/Data/clarity_CEC1_data/clarity_data/",
-        default="/home/kenders/greenhdd/clarity_challenge/data/clarity_CEC1_data/clarity_data/"
+        default="~/data/Data/clarity_CEC1_data/clarity_data/",
+        # default="/home/kenders/greenhdd/clarity_challenge/data/clarity_CEC1_data/clarity_data/"
     )
-
+    ap.add_argument(
+        "-fs",
+        type=str,
+        dest="save_fs",
+        help="output sampling rate.",
+        default=32000,
+        # default="~/data/submission/cleaned_scenes/eval",
+        # default="/home/kenders/greenhdd/clarity_challenge/data/listening_test_data"
+    )
+    ap.add_argument(
+        "-st",
+        type=str,
+        dest="save_subtype",
+        help="output wav format (e.g. FLOAT or PCM_16 soundfile subtype).",
+        default="PCM_16",
+        # default="~/data/submission/cleaned_scenes/eval",
+        # default="/home/kenders/greenhdd/clarity_challenge/data/listening_test_data"
+    )
 
 
     args = ap.parse_args()
@@ -341,12 +366,18 @@ if __name__ == "__main__":
                 # print(10 * np.log10(np.mean(fil_audio_compressed**2,0))+120)
 
                 # load the origianl channel 1 to ensure the output lenght is the same (truncate the zero padding)
-                original_ch1, fs = sf.read(Path(clarity_data) / dataset / "scenes" / f"{scene}_mixed_CH1.wav")
+                original_ch1, original_fs = sf.read(Path(clarity_data) / args.audio_path_dataset_name / "scenes" / f"{scene}_mixed_CH1.wav")
                 original_samples = original_ch1.shape[0]
-                fil_audio_compressed_44k = librosa.resample(fil_audio_compressed.T, fs_hearing_aid, 44100)
+                fil_audio_compressed_44k = librosa.resample(fil_audio_compressed.T, fs_hearing_aid, original_fs)
                 fil_audio_compressed_44k = fil_audio_compressed_44k[:,0:original_samples].T
-                sf.write(f"{output_path}/{scene}_{listener_name}_HA-output.wav", fil_audio_compressed_44k, 44100, subtype="FLOAT")
+
+                # resample to new rate and save
+                fil_audio_compressed_new_rate = librosa.resample(fil_audio_compressed_44k.T, original_fs, args.save_fs).T
+                sf.write(f"{output_path}/{scene}_{listener_name}_HA-output.wav", fil_audio_compressed_new_rate, args.save_fs, subtype=args.save_subtype)
+
                 # check the output is syncronised with the input (CH1, left ear)
+                # a small delay of a sample or two is probably due to the resampling from 16 kHz to 44.1kHz
+                # a larger delay probably indicates poor quality enhancement
                 corr = signal.correlate(original_ch1[:, 0], fil_audio_compressed_44k[: ,0], mode='full', method='auto')
                 in2_len = fil_audio_compressed_44k.shape[0]
                 in1_len = original_ch1.shape[0]
