@@ -1,13 +1,10 @@
 # $PYTHON_BIN "$CLARITY_ROOT"/scripts/run_HA_processing.py  --num_channels "$num_channels" "$CLARITY_DATA"/metadata/scenes."$dataset".json "$CLARITY_DATA"/metadata/listeners.json "$CLARITY_DATA"/metadata/scenes_listeners."$dataset".json "$CLARITY_DATA"/"$dataset"/scenes "$CLARITY_DATA"/"$dataset"/scenes
 ## Set these paths
-CLARITY_ROOT = "/home/paulkendrick/clarity_CEC1"
-CLARITY_DATA = "/home/paulkendrick/clarity_CEC1/data/clarity_data"
-CFG_TEMPLATE = "/home/paulkendrick/greenhdd/clarity_challenge/pk_speech_enhancement/spectrogram_based_model/modified_prerelease_combination4_smooth_template.cfg"
 
 
 ########
 import sys
-sys.path.append('/home/kenders/clarity_CEC1/env/lib/python3.6/site-packages')
+
 # ls /home/paulkendrick/clarity_CEC1/env/lib/python3.6/site-packages/audio_dspy
 import numpy as np
 import soundfile as sf
@@ -635,6 +632,15 @@ if __name__ == "__main__":
         help="process from  this scene / listener number",
         dest="starting_sample",
     )
+    ap.add_argument(
+        "-u",
+        type=str,
+        dest="username",
+        help="system username.",
+        default="kenders",
+        # default="/home/ubuntu/spectrogram_based_model/models/9_0.01611/",
+        # default="/home/paulkendrick/spectrogram_based_models/models/9_0.01611/",
+    )
 #     parser.add_argument("scene_list_filename", help="json file containing scene data")
 #     parser.add_argument("listener_filename", help="json file containing listener data")
 #     parser.add_argument(
@@ -645,6 +651,12 @@ if __name__ == "__main__":
 #     parser.add_argument("input_path", help="input file names")
 #     parser.add_argument("output_path", help="path to output data")
     args = parser.parse_args()
+
+
+    sys.path.append(f'/home/{args.username}/clarity_CEC1/env/lib/python3.6/site-packages')
+    CLARITY_ROOT = f"/home/{args.username}/clarity_CEC1"
+    CLARITY_DATA = f"/home/{args.username}/clarity_CEC1/data/clarity_data"
+    CFG_TEMPLATE = f"/home/{args.username}/greenhdd/clarity_challenge/pk_speech_enhancement/spectrogram_based_model/modified_prerelease_combination4_smooth_template.cfg"
 
 #     channels = args.num_channels
     ############################################################################
