@@ -625,7 +625,7 @@ if __name__ == "__main__":
         help="process from  this scene / listener number",
         dest="starting_sample",
     )
-    ap.add_argument(
+    parser.add_argument(
         "-u",
         type=str,
         dest="username",
