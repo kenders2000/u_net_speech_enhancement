@@ -423,11 +423,6 @@ CONFIG.cfg_file = "modified_prerelease_combination4_smooth"
 # doing what run_HA_processing.py does
 from scipy.signal import unit_impulse
 
-# from clarity_core.signal import read_signal, write_signal, pad
-sys.path.append("../projects/MSBG")
-import MSBG
-# to get the hearing loss to work change the working directory
-os.chdir(f"{CLARITY_ROOT}/projects/MSBG")
 
 def listen(signal, ears):
     outputs = [
@@ -526,8 +521,6 @@ def run_HL_processing(scene, listener, input_path, output_path, fs):
 # from clarity_core.config import CONFIG
 # from clarity_core.signal import read_signal, find_delay_impulse
 
-sys.path.append("../projects/MBSTOI")
-from MBSTOI import mbstoi
 
 
 def calculate_SI(
@@ -657,6 +650,14 @@ if __name__ == "__main__":
     CLARITY_ROOT = f"/home/{args.username}/clarity_CEC1"
     CLARITY_DATA = f"/home/{args.username}/clarity_CEC1/data/clarity_data"
     CFG_TEMPLATE = f"/home/{args.username}/greenhdd/clarity_challenge/pk_speech_enhancement/spectrogram_based_model/modified_prerelease_combination4_smooth_template.cfg"
+    # from clarity_core.signal import read_signal, write_signal, pad
+    sys.path.append("../projects/MSBG")
+    import MSBG
+    # to get the hearing loss to work change the working directory
+    os.chdir(f"{CLARITY_ROOT}/projects/MSBG")
+
+    sys.path.append("../projects/MBSTOI")
+    from MBSTOI import mbstoi
 
 #     channels = args.num_channels
     ############################################################################
