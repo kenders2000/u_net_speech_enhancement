@@ -626,15 +626,15 @@ def calculate_SI(
 
 
 if __name__ == "__main__":
-#     parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser()
 #     parser.add_argument("--dry_run", action="store_true", help="perform dry run only")
-#     parser.add_argument(
-#         "--num_channels",
-#         nargs="?",
-#         type=int,
-#         default=1,
-#         help="number of HA channels [default: 1]",
-#     )
+    parser.add_argument(
+        "--starting_sample",
+        type=int,
+        default=0,
+        help="process from  this scene / listener number",
+        dest="starting_sample",
+    )
 #     parser.add_argument("scene_list_filename", help="json file containing scene data")
 #     parser.add_argument("listener_filename", help="json file containing listener data")
 #     parser.add_argument(
@@ -644,7 +644,7 @@ if __name__ == "__main__":
 
 #     parser.add_argument("input_path", help="input file names")
 #     parser.add_argument("output_path", help="path to output data")
-#     args = parser.parse_args()
+    args = parser.parse_args()
 
 #     channels = args.num_channels
     ############################################################################
@@ -665,7 +665,7 @@ if __name__ == "__main__":
     # for scene_n, scene in enumerate(scene_list):
     import time
 
-    for scene_n in range(1945, len(scene_list)):
+    for scene_n in range(args.starting_sample, len(scene_list)):
         scene = scene_list[scene_n]
         for listener_name in scenes_listeners[scene["scene"]]:
             iteration_start = time.time()
@@ -760,10 +760,10 @@ if __name__ == "__main__":
                 dry_run=False,
             )
             print(f"Scene {scene['scene']} listener {listener['name']} sii {round(sii,4)}\n")
-            with open(f"{output_path}/dev_data_performance_macbook_last.txt", "a") as output_file:
-                output_file.write(
-                    f"Scene {scene['scene']} listener {listener['name']} sii {round(sii,4)}\n"
-                )
+            # with open(f"{output_path}/dev_data_performance_macbook_last.txt", "a") as output_file:
+            #     output_file.write(
+            #         f"Scene {scene['scene']} listener {listener['name']} sii {round(sii,4)}\n"
+            #     )
             iteration_end = time.time()
             # print(f"iteration time {iteration_end-iteration_start}")
 
