@@ -7,7 +7,7 @@ CFG_TEMPLATE = "/home/paulkendrick/greenhdd/clarity_challenge/pk_speech_enhancem
 
 ########
 import sys
-sys.path.append('/home/paulkendrick/clarity_CEC1/env/lib/python3.6/site-packages')
+sys.path.append('/home/kenders/clarity_CEC1/env/lib/python3.6/site-packages')
 # ls /home/paulkendrick/clarity_CEC1/env/lib/python3.6/site-packages/audio_dspy
 import numpy as np
 import soundfile as sf
