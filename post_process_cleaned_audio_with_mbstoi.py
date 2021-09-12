@@ -619,11 +619,11 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
 #     parser.add_argument("--dry_run", action="store_true", help="perform dry run only")
     parser.add_argument(
-        "--starting_sample",
+        "-s",
         type=int,
-        default=0,
-        help="process from  this scene / listener number",
-        dest="starting_sample",
+        default=None,
+        help="process from  this scene e.g. `S0600`",
+        dest="starting_scene",
     )
     parser.add_argument(
         "-u",
@@ -677,8 +677,11 @@ if __name__ == "__main__":
     hearing_aid = HearingAid(fs=CONFIG.fs, channels=3)
     # for scene_n, scene in enumerate(scene_list):
     import time
-
-    for scene_n in range(args.starting_sample, len(scene_list)):
+    if args.starting_scene:
+        start = [n for n, scene_dict in enumerate(scene_list) if scene_dict['scene'] == args.starting_scene][0]
+    else:
+        start = 0
+    for scene_n in range(start, len(scene_list)):
         scene = scene_list[scene_n]
         for listener_name in scenes_listeners[scene["scene"]]:
             iteration_start = time.time()

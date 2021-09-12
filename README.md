@@ -57,8 +57,9 @@ to predict using the example dataset:
 
 `python predict_with_trained_unet.py -p /path/to/trained_model -d dev`
 
+# To apply the hearing aid to the dev data, and evaluate the sii
+`python post_process_cleaned_audio_eval.py -u <username>`
+
+
 # To generate evaluation data.
 `python post_process_cleaned_audio_eval.py -p /path/to/trained_model -d <dataset> -i /path/to/cleaned_data -o /path/to/write_hearing_aid_files -s /path/to/clarity/dataset`
-
-# To get SII for dev data:
-post_process_cleaned_audio_with_mbstoi.py
